@@ -1,0 +1,191 @@
+<!DOCTYPE html> <!-- Questa linea dichiara il tipo di documento come HTML5. -->
+<html lang="en"> <!-- Qui inizia il documento HTML, e si specifica che il linguaggio utilizzato è l'inglese (en). -->
+<head> <!-- La sezione <head> contiene metadati e link alle risorse esterne come fogli di stile CSS e script JavaScript. -->
+  <!-- La sezione <head> di un documento HTML contiene informazioni che non vengono visualizzate direttamente nella pagina web, ma forniscono metadati e collegamenti a risorse esterne che aiutano a definire come il browser deve interpretare e presentare la pagina. Il termine "metadati" si riferisce ai dati che descrivono altri dati. Nel contesto di un documento HTML, i metadati forniscono informazioni sul documento stesso, come il set di caratteri utilizzato, il titolo della pagina, i fogli di stile collegati e altre informazioni utili per il browser e i motori di ricerca. -->
+    <meta charset="UTF-8"> <!-- Imposta il set di caratteri del documento come UTF-8, che è uno standard per rappresentare i caratteri Unicode. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Questo meta tag è importante per la responsività del sito (Controlla come la pagina è visualizzata su dispositivi mobili). width=device-width imposta la larghezza della pagina sul larghezza del dispositivo, e initial-scale=1.0 imposta il livello di zoom iniziale. -->
+    <title>Registrazione Utente</title> <!-- Definisce il titolo della pagina visualizzato nella barra del browser o nella scheda. -->
+    <link rel="stylesheet" href="styles.css"> <!-- Linka il foglio di stile CSS styles.css al documento HTML. -->
+</head> <!-- Chiude la sezione <head>. -->
+  
+<body> <!-- Inizia la sezione <body>, che contiene il contenuto visibile della pagina web. -->
+
+<div class="container" id="registration-container"> <!-- Un div con classe container serve come contenitore principale per il modulo di registrazione. -->
+    <h1>Registrazione Utente</h1> <!-- Un'intestazione di primo livello (<h1>) che mostra il titolo "Registrazione Utente". -->
+    <form id="registration-form"> <!-- Inizia un modulo di registrazione con un form. L'attributo id="registration-form" serve per riferirsi a questo modulo in JavaScript. -->
+        <div class="form-group"> <!-- Un div con classe form-group è utilizzato per raggruppare ogni campo del modulo. -->
+            <label for="nickname">Nickname:</label> <!-- Un etichetta (<label>) per il campo nickname, che aiuta a identificare il campo per gli utenti. -->
+            <input type="text" id="nickname" name="nickname" required> <!-- Un campo di input (<input>) di tipo testo (text) per il nickname. L'attributo id="nickname" e name="nickname" servono per identificare e riferirsi a questo campo in JavaScript. L'attributo required indica che questo campo è obbligatorio. -->
+        </div> <!-- Chiude il div con classe form-group. -->
+      <!-- I seguenti div e campi label (etichetta) e input seguono lo stesso pattern per raccogliere altre informazioni come nome (e cognome), email, numero di telefono, password e interessi. -->
+        <div class="form-group">
+            <label for="name">Nome e Cognome:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="phone">Numero di Telefono:</label>
+            <input type="tel" id="phone" name="phone" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <label for="interests">Interessi Culinari (opzionale):</label>
+            <input type="text" id="interests" name="interests">
+        </div>
+        <button type="submit">Registrati</button> <!-- Un pulsante di tipo "submit" che, quando premuto, invierà il modulo. -->
+      <button type="button" id="login-button">Log In</button> <!-- Aggiungi pulsante Log In -->
+    </form> <!-- Chiude il form. -->
+</div> <!-- Chiude il div con classe container. -->
+  
+<div class="container" id="login-container" style="display:none;">
+    <h1>Log In</h1>
+    <form id="login-form">
+        <div class="form-group">
+            <label for="login-email">Email:</label>
+            <input type="email" id="login-email" name="login-email" required>
+        </div>
+        <div class="form-group">
+            <label for="login-password">Password:</label>
+            <input type="password" id="login-password" name="login-password" required>
+        </div>
+        <button type="submit">Log In</button>
+      <button type="button" id="cancel-button">Annulla</button>
+    </form>
+</div>
+  
+<div class="container" id="recipes-container" style="display:none;">
+    <div class="header">
+        <h1>Ricette degli Utenti</h1>
+        <button id="profile-management-button">Gestione Profilo</button>
+    </div>
+    <button id="publish-recipe-button">Pubblica Ricetta</button>
+    <div id="publish-recipe-form" style="display:none;">
+        <h2>Pubblica una Nuova Ricetta</h2>
+        <form id="new-recipe-form">
+            <div class="form-group">
+                <label for="recipe-name">Nome della Ricetta:</label>
+                <input type="text" id="recipe-name" name="recipe-name" required>
+            </div>
+            <div class="form-group">
+                <label for="recipe-photo">Foto della Ricetta:</label>
+                <input type="file" id="recipe-photo" name="recipe-photo" required>
+            </div>
+            <div class="form-group">
+                <label for="cuisine-type">Tipo di Cucina:</label>
+                <input type="text" id="cuisine-type" name="cuisine-type" required>
+            </div>
+            <div class="form-group">
+                <label for="prep-time-hours">Tempo di Preparazione (ore):</label>
+                <input type="number" id="prep-time-hours" name="prep-time-hours" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="prep-time-minutes">Tempo di Preparazione (minuti):</label>
+                <input type="number" id="prep-time-minutes" name="prep-time-minutes" min="0" max="59" required>
+            </div>
+            <div class="form-group">
+                <label for="difficulty">Difficoltà:</label>
+                <select id="difficulty" name="difficulty" required>
+                    <option value="1">1/5</option>
+                    <option value="2">2/5</option>
+                    <option value="3">3/5</option>
+                    <option value="4">4/5</option>
+                    <option value="5">5/5</option>
+                </select>
+            </div>
+            <div class="form-group">
+    <label>Ingredienti:</label>
+    <div id="ingredients-list">
+        <div class="ingredient-entry">
+            <input type="text" name="ingredients[]" class="ingredient" required placeholder="Ingrediente">
+            <input type="text" name="dosages[]" class="dosage" required placeholder="Dosaggio">
+        </div>
+    </div>
+    <button type="button" id="add-ingredient">Aggiungi Ingrediente</button>
+    <button type="button" id="remove-ingredient">Rimuovi Ultimo Ingrediente</button>
+</div>
+            <div class="form-group">
+                <label>Procedimento:</label>
+                <div id="steps-list">
+                    <input type="text" name="steps[]" class="step" required>
+                </div>
+                <button type="button" id="add-step">Aggiungi Procedimento</button>
+                <button type="button" id="remove-step">Rimuovi Ultimo Procedimento</button>
+            </div>
+            <button type="submit">Pubblica</button>
+            <button type="button" id="cancel-publish-recipe">Annulla</button>
+        </form>
+    </div>
+    <!-- Sezione di ricerca -->
+<div id="search-recipes">
+    <h2>Cerca Ricette</h2>
+    <form id="search-recipes-form">
+        <div class="form-group">
+            <label for="search-cuisine">Tipo di Cucina:</label>
+            <input type="text" id="search-cuisine" name="search-cuisine">
+        </div>
+        <div class="form-group">
+            <label for="search-ingredient">Ingrediente:</label>
+            <input type="text" id="search-ingredient" name="search-ingredient">
+        </div>
+        <div class="form-group">
+            <label for="search-prep-time-hours">Tempo di Preparazione (ore):</label>
+            <input type="number" id="search-prep-time-hours" name="search-prep-time-hours" min="0">
+        </div>
+        <div class="form-group">
+            <label for="search-prep-time-minutes">Tempo di Preparazione (minuti):</label>
+            <input type="number" id="search-prep-time-minutes" name="search-prep-time-minutes" min="0" max="59">
+        </div>
+        <div class="form-group" id="rating-group">
+            <label for="search-rating">Valutazione:</label>
+            <select id="search-rating" name="search-rating">
+                <option value="">Qualsiasi</option>
+                <option value="0">0/5</option>
+                <option value="1">1/5</option>
+                <option value="2">2/5</option>
+                <option value="3">3/5</option>
+                <option value="4">4/5</option>
+                <option value="5">5/5</option>
+            </select>
+        </div>
+        <button type="submit">Cerca</button>
+    </form>
+</div>
+    <div id="recipes-list"></div>
+</div>
+  
+<div class="container" id="profile-management-container" style="display:none;">
+    <button id="back-to-user-recipes">Indietro</button>    
+    <h1>Gestione del Profilo</h1>    
+    <h2>Informazioni Utente:</h2>
+    <div id="user-info">
+        <p>Nickname: <span id="user-nickname"></span> <button class="edit-button" data-field="nickname">Modifica</button></p>
+        <p>Nome: <span id="user-name"></span> <button class="edit-button" data-field="name">Modifica</button></p>
+        <p>Email: <span id="user-email"></span> <button class="edit-button" data-field="email">Modifica</button></p>
+        <p>Telefono: <span id="user-phone"></span> <button class="edit-button" data-field="phone">Modifica</button></p>
+        <p>Password: <span id="user-password"></span> <button class="edit-button" data-field="password">Modifica</button></p>
+        <p>Interessi: <span id="user-interests"></span> <button class="edit-button" data-field="interests">Modifica</button></p>
+    </div>
+    <button id="include-dietary-preferences">Includi preferenze alimentari</button>
+    <button id="include-allergies">Includi allergie</button>
+    <form id="profile-management-form">
+        <div id="dietary-preferences-container"></div>
+        <div id="allergies-container"></div>
+        <button type="submit">Salva Modifiche</button>
+    </form>
+    <h2>Lista delle tue Ricette:</h2>
+    <div id="loading-indicator" style="display:none;">Caricamento in corso...</div>
+    <div id="user-recipes-list"></div>
+    <button id="logout-button">Log Out</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-firestore.js"></script> <!-- Incorpora i file JavaScript necessari per Firebase. -->
+
+</body> <!-- Chiude la sezione <body>. -->
+</html> <!-- Chiude il documento HTML. -->
