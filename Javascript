@@ -1,0 +1,1057 @@
+//Inizializza Firebase
+//nome progetto database: finalproject
+//id progetto database: finalproject-92a5a
+//nickname app web database: codepen_finalproject
+const firebaseConfig = { //Crea un oggetto JavaScript che contiene tutte le chiavi di configurazione necessarie per inizializzare e connettersi a Firebase (si sta definendo una costante per garantire che le chiavi di configurazionapiKeye non vengano modificate accidentalmente nel codice); l'oggetto definito come costante avrà nome di firebaseConfig.
+    apiKey: "AIzaSyDSza9s6b0Hl7gl2otQ93Dwjv6DyAV8Z1w", //Questa è la chiave API del progetto Firebase. Serve per autenticare le richieste al progetto Firebase.
+    authDomain: "finalproject-92a5a.firebaseapp.com", //È il dominio di autenticazione del progetto Firebase. Questo è utilizzato per autenticare gli utenti attraverso Firebase Authentication.
+    projectId: "finalproject-92a5a", //È l'ID del progetto Firebase. Questo identifica univocamente il progetto Firebase.
+    storageBucket: "finalproject-92a5a.appspot.com", //È il bucket di storage del progetto Firebase. È utilizzato per l'accesso al Firebase Storage, se necessario.
+    messagingSenderId: "550091093029", //È l'ID del mittente per le notifiche cloud. Utilizzato per Firebase Cloud Messaging.
+    appId: "1:550091093029:web:4ac5752db9cbb745463bcc" //È l'ID dell'applicazione Firebase. Serve per identificare in modo univoco l'applicazione creata dal programmatore all'interno del progetto Firebase.
+};
+
+//Inizializzazioni del database
+firebase.initializeApp(firebaseConfig); //Inizializzazione di Firebase con la configurazione
+var database = firebase.firestore(); //Riferimento al database di Firebase
+
+const form = document.getElementById("registration-form");
+const loginForm = document.getElementById("login-form");
+const loginButton = document.getElementById("login-button");
+const cancelButton = document.getElementById("cancel-button");
+//const registrationContainer = document.querySelector(".container");
+const registrationContainer = document.getElementById("registration-container");
+const loginContainer = document.getElementById("login-container");
+const recipesContainer = document.getElementById("recipes-container");
+const publishRecipeButton = document.getElementById("publish-recipe-button");
+const publishRecipeForm = document.getElementById("publish-recipe-form");
+const cancelPublishRecipeButton = document.getElementById("cancel-publish-recipe");
+const searchRecipes = document.getElementById("search-recipes");
+const searchRecipesForm = document.getElementById("search-recipes-form");
+const newRecipeForm = document.getElementById("new-recipe-form");
+const recipesList = document.getElementById("recipes-list");
+const ingredientsList = document.getElementById("ingredients-list");
+const stepsList = document.getElementById("steps-list");
+const addIngredientButton = document.getElementById("add-ingredient");
+const removeIngredientButton = document.getElementById("remove-ingredient");
+const addStepButton = document.getElementById("add-step");
+const removeStepButton = document.getElementById("remove-step");
+const profileManagementButton = document.getElementById("profile-management-button");
+const profileManagementContainer = document.getElementById("profile-management-container");
+const logoutButton = document.getElementById("logout-button");
+const userRecipesList = document.getElementById("user-recipes-list");
+const includeDietaryPreferencesButton = document.getElementById("include-dietary-preferences");
+const includeAllergiesButton = document.getElementById("include-allergies");
+const dietaryPreferencesContainer = document.getElementById("dietary-preferences-container");
+const allergiesContainer = document.getElementById("allergies-container");
+const profileManagementForm = document.getElementById("profile-management-form");
+const submitButton = profileManagementForm.querySelector('button[type="submit"]');
+const userNickname = document.getElementById("user-nickname");
+const userName = document.getElementById("user-name");
+const userEmail = document.getElementById("user-email");
+const userPhone = document.getElementById("user-phone");
+const userPassword = document.getElementById("user-password");
+const userInterests = document.getElementById("user-interests");
+let currentUser = null;
+
+let initialDietaryPreferences = [];
+let initialAllergies = [];
+let initialDietaryPreferencesCount = 0;
+let initialAllergiesCount = 0;
+
+form.addEventListener("submit", function(event) { //Event listener per l'invio del form
+    event.preventDefault(); //Previene il comportamento di default del form
+
+    //Recupera i valori dai campi del form
+    const nickname = document.getElementById("nickname").value;
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const phone = document.getElementById("phone").value;
+    const password = document.getElementById("password").value;
+    const interests = document.getElementById("interests").value;
+  
+    // Controlla se l'email è già presente nel database
+    database.collection("users").doc(email).get()
+        .then((doc) => {
+            if (doc.exists) {
+                // Se l'email è già presente, mostra un messaggio di errore
+                alert("Email già registrata. Esegui il Log In.");
+                // Pulisce i campi del form
+                form.reset();
+                // Interrompe l'esecuzione della funzione
+                throw new Error("Email già registrata");
+            } else {
+    //Se l'email non è presente, salva i dati nel database Firebase
+    return database.collection("users").doc(email).set({
+        nickname: nickname,
+        name: name,
+        email: email,
+        phone: phone,
+        password: password,
+        interests: interests,
+        dietaryPreferences: [],
+        allergies: []
+    });
+    }
+    })
+    .then(() => { //Questo blocco di codice viene eseguito quando la promessa è risolta con successo, cioè quando i dati vengono salvati nel database Firebase senza errori.
+        alert("Registrazione completata con successo!"); //Mostra un messaggio di successo
+        form.reset(); //Resetta il form dopo l'invio
+      currentUser = { email: email, nickname: nickname };
+        showRecipesPage();
+    })
+    .catch((error) => { //Questo blocco di codice viene eseguito quando si verifica un errore durante l'esecuzione della promessa, ad esempio se ci sono problemi di connessione o se ci sono errori nei dati, o se viene inserita una email già esistente.
+        alert("Si è verificato un errore durante la registrazione."); //Mostra un messaggio di errore
+        console.error(error); //Stampa l'errore nella console del browser. Questo è utile per la diagnosi e il debugging, poiché fornisce dettagli sull'errore che aiutano a identificare e risolvere il problema.
+    });
+});
+//Event listener per il pulsante Log In
+loginButton.addEventListener("click", () => {
+    registrationContainer.style.display = "none";
+    loginContainer.style.display = "block";
+});
+//Event listener per il pulsante Annulla
+cancelButton.addEventListener("click", () => {
+    loginForm.reset();
+    loginContainer.style.display = "none";
+    registrationContainer.style.display = "block";
+});
+//Event listener per il form di login
+loginForm.addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+
+    database.collection("users").doc(email).get()
+        .then((doc) => {
+            if (doc.exists) {
+                const userData = doc.data();
+                if (userData.password === password) {
+                    alert("Accesso effettuato con successo!");
+                    loginForm.reset();
+                  currentUser = { email: email, nickname: userData.nickname };
+                    showRecipesPage();
+                } else {
+                    alert("Password errata.");
+                }
+            } else {
+                alert("Utente non trovato.");
+            }
+        })
+        .catch((error) => {
+            alert("Si è verificato un errore durante l'accesso.");
+            console.error(error);
+        });
+});
+
+//Mostra la pagina delle ricette
+function showRecipesPage() {
+    registrationContainer.style.display = "none";
+    loginContainer.style.display = "none";
+    searchRecipes.style.display = "block";
+    recipesContainer.style.display = "block";
+    loadRecipes();
+    displayUserInfo();
+}
+
+searchRecipesForm.addEventListener("submit", function(event) {
+    event.preventDefault();
+    loadRecipes();
+});
+
+//Carica le ricette dal database
+function loadRecipes() {
+    const cuisine = document.getElementById("search-cuisine").value.trim().toLowerCase();
+    const ingredient = document.getElementById("search-ingredient").value.trim().toLowerCase();
+    const prepTimeHoursInput = document.getElementById("search-prep-time-hours").value.trim();
+    const prepTimeMinutesInput = document.getElementById("search-prep-time-minutes").value.trim();
+    const prepTimeHours = parseInt(prepTimeHoursInput) || 0;
+    const prepTimeMinutes = parseInt(prepTimeMinutesInput) || 0;
+    const totalPrepTimeInput = (prepTimeHours * 60) + prepTimeMinutes;
+    const rating = document.getElementById("search-rating").value;
+  
+    // Controlla se il tempo di preparazione è esplicitamente 0 ore e 0 minuti
+    if (prepTimeHoursInput === '0' && prepTimeMinutesInput === '0') {
+        alert("Una ricetta non può avere 0 ore e 0 minuti di tempo di preparazione.");
+        return; // Interrompe l'esecuzione della funzione
+    } else if (prepTimeHoursInput === '0' && prepTimeMinutes === 0) {
+        alert("Non inserire nel campo ore 0 lasciando vuoto il campo minuti");
+        return; // Interrompe l'esecuzione della funzione
+    } else if (prepTimeHours === 0 && prepTimeMinutesInput === '0') {
+        alert("Non inserire nel campo minuti 0 lasciando vuoto il campo ore");
+        return; // Interrompe l'esecuzione della funzione
+    }
+
+    recipesList.innerHTML = '';
+    let query = database.collection("recipes");
+
+    if (cuisine) {
+        query = query.where("cuisineType", "==", cuisine);
+    }
+
+    query.get().then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+            const recipeData = doc.data();
+            const recipeId = doc.id;
+
+            // Filtro ingredienti
+            if (ingredient && !recipeData.ingredients.some(ing => ing.toLowerCase().includes(ingredient))) {
+                return;
+            }
+
+            // Filtro tempo di preparazione
+            const totalPrepTime = (recipeData.prepTime.hours * 60) + recipeData.prepTime.minutes;
+            if (totalPrepTimeInput && totalPrepTime !== totalPrepTimeInput) {
+                return;
+            }
+
+            // Filtro valutazione
+            const averageRating = recipeData.averageRating;
+            if (rating || rating === 0) {
+                let minRating = (rating - 1) + 0.5;
+                let maxRating = (rating - 1) + 1.5;
+
+                if (rating === 0) {
+                    minRating = 0;
+                    maxRating = 0.5;
+                } else if (rating === 5) {
+                    maxRating = 5;
+                }
+
+                if (averageRating < minRating || averageRating >= maxRating) {
+                    return;
+                }
+            }
+
+            // Visualizzazione delle recensioni
+            let reviewsHtml = '';
+            if (recipeData.reviews  && recipeData.reviews.length > 0) {
+                reviewsHtml = recipeData.reviews.map(review => `
+                    <div class="review">
+                        <h3>Recensione</h3>
+                        <p><strong>${review.reviewerName}:</strong> ${review.rating}/5</p>
+                        <p>${review.text}</p>
+                    </div>
+                `).join('');
+            } else {
+                reviewsHtml = '<p>Non sono presenti recensioni</p>';
+            }
+          
+            let attemptsHtml = '';
+            if (recipeData.attempts && recipeData.attempts.length > 0) {
+    attemptsHtml = recipeData.attempts.map(attempt => `
+        <div class="attempt">
+            <h3>Tentativo</h3>
+            <p><strong>${attempt.nickname}:</strong> ${attempt.suggestions}</p>
+            ${attempt.photoUrl ? `<img src="${attempt.photoUrl}" alt="Tentativo di ${attempt.nickname}">` : ''}
+        </div>
+    `).join('');
+} else {
+    attemptsHtml = '<p>Non sono presenti tentativi degli Utenti</p>';
+}
+
+            const recipeItem = document.createElement("div");
+            recipeItem.className = "recipe-item";
+            recipeItem.id = `recipe-${recipeId}`;
+
+            // Creazione dei cerchi per la difficoltà
+            let difficultyCircles = '';
+            for (let i = 0; i < 5; i++) {
+                if (i < recipeData.difficulty) {
+                    difficultyCircles += `<span class="circle filled difficulty-${recipeData.difficulty}"></span>`;
+                } else {
+                    difficultyCircles += '<span class="circle empty"></span>';
+                }
+            }
+
+            recipeItem.innerHTML = `
+                <h3>${recipeData.name}</h3>
+                <img src="${recipeData.photoUrl}" alt="${recipeData.name}">
+                <p>Tipo di Cucina: ${recipeData.cuisineType}</p>
+                <p>Tempo di preparazione: ${recipeData.prepTime.hours}h ${recipeData.prepTime.minutes}m</p>
+                <p>Difficoltà: ${difficultyCircles}</p>
+                <p>Ingredienti:</p>
+                <ul>
+                    ${recipeData.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
+                </ul>
+                <p>Procedimento:</p>
+                <ol>
+                    ${recipeData.steps.map(step => `<li>${step}</li>`).join('')}
+                </ol>
+                <p>Pubblicato da: ${recipeData.nickname}</p>
+                <div class="reviews">
+                    <h4>Recensioni, Suggerimenti e Commenti:</h4>
+                    <button class="add-review-button" data-recipe-id="${recipeId}">Aggiungi Recensione</button>
+                    <button class="share-attempt-button" data-recipe-id="${recipeId}">Condividi Tentativo</button>
+                    ${reviewsHtml}
+                    ${attemptsHtml}
+                    <div class="review-form" id="review-form-${recipeId}" style="display:none;">
+                        <input type="text" placeholder="Nome" id="reviewer-name-${recipeId}" value="${currentUser.nickname}" readonly>
+                        <input type="number" placeholder="Valutazione (1-5)" id="review-rating-${recipeId}" min="1" max="5">
+                        <textarea placeholder="Recensione" id="review-text-${recipeId}"></textarea>
+                        <button class="cancel-review-button" data-recipe-id="${recipeId}">Annulla</button>
+                        <button class="submit-review-button" data-recipe-id="${recipeId}">Invia Recensione</button>
+                    </div>
+                    <div class="share-attempt-form" id="share-attempt-form-${recipeId}" style="display:none;">
+                        <input type="file" id="attempt-photo-${recipeId}">
+                        <textarea placeholder="Suggerimenti" id="attempt-suggestions-${recipeId}" required></textarea>
+                        <button class="cancel-attempt-button" data-recipe-id="${recipeId}">Annulla</button>
+                        <button class="submit-attempt-button" data-recipe-id="${recipeId}">Condividi</button>
+                    </div>
+                </div>
+            `;
+
+            recipesList.appendChild(recipeItem);
+        });
+
+        document.querySelectorAll('.add-review-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const recipeId = this.getAttribute("data-recipe-id");
+                const reviewForm = document.getElementById(`review-form-${recipeId}`);
+                reviewForm.style.display = "block";
+            });
+        });
+      
+        document.querySelectorAll('.share-attempt-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const recipeId = this.getAttribute("data-recipe-id");
+                const attemptForm = document.getElementById(`share-attempt-form-${recipeId}`);
+                attemptForm.style.display = "block";
+            });
+        });
+        
+        // Aggiungi un event listener per il pulsante "Annulla"
+        document.querySelectorAll('.cancel-review-button').forEach(button => {
+        button.addEventListener('click', function() {
+        const recipeId = this.getAttribute("data-recipe-id");
+        const reviewForm = document.getElementById(`review-form-${recipeId}`);
+        reviewForm.style.display = "none";
+        resetReviewForm(recipeId);
+            });
+        });
+      
+        // Aggiungi un event listener per il pulsante "Annulla" tentativo
+        document.querySelectorAll('.cancel-attempt-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const recipeId = this.getAttribute("data-recipe-id");
+                const attemptForm = document.getElementById(`share-attempt-form-${recipeId}`);
+                attemptForm.style.display = "none";
+                resetAttemptForm(recipeId);
+            });
+        });
+
+        // Aggiungi la funzione per resettare il form di recensione
+        function resetReviewForm(recipeId) {
+        document.getElementById(`review-rating-${recipeId}`).value = '';
+        document.getElementById(`review-text-${recipeId}`).value = '';
+        }
+      
+        // Aggiungi la funzione per resettare il form di tentativo
+        function resetAttemptForm(recipeId) {
+            document.getElementById(`attempt-photo-${recipeId}`).value = '';
+            document.getElementById(`attempt-suggestions-${recipeId}`).value = '';
+        }
+
+        document.querySelectorAll('.submit-review-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const recipeId = this.getAttribute('data-recipe-id');
+                const reviewerName = document.getElementById(`reviewer-name-${recipeId}`).value;
+                const rating = document.getElementById(`review-rating-${recipeId}`).value;
+                const text = document.getElementById(`review-text-${recipeId}`).value;
+
+                if (reviewerName && rating && text) {
+                    addReview(recipeId, reviewerName, parseInt(rating), text);
+                } else {
+                    alert("Per favore, compila tutti i campi della recensione.");
+                }
+            });
+        });
+      
+         document.querySelectorAll('.submit-attempt-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const recipeId = this.getAttribute('data-recipe-id');
+                const photoFile = document.getElementById(`attempt-photo-${recipeId}`).files[0];
+                const suggestions = document.getElementById(`attempt-suggestions-${recipeId}`).value;
+
+                if (suggestions) {
+                    if (photoFile) {
+                shareAttemptWithPhoto(recipeId, photoFile, suggestions);
+            } else {
+                shareAttemptWithoutPhoto(recipeId, suggestions);
+            }
+                } else {
+                    alert("Per favore, inserisci i suggerimenti.");
+                }
+            });
+        });
+    }).catch((error) => {
+        console.error("Errore nel caricamento delle ricette: ", error);
+    });
+}
+
+function displayUserInfo() {
+    database.collection("users").doc(currentUser.email).get()
+        .then((doc) => {
+            if (doc.exists) {
+                const userData = doc.data();
+                userNickname.textContent = userData.nickname;
+                userName.textContent = userData.name;
+                userEmail.textContent = userData.email;
+                userPhone.textContent = userData.phone;
+                userPassword.textContent = userData.password;
+                userInterests.textContent = userData.interests;
+            } else {
+                console.error("Documento utente non trovato.");
+            }
+        })
+        .catch((error) => {
+            console.error("Errore nel recupero delle informazioni utente: ", error);
+        });
+}
+
+// Funzione per iniziare la modifica del campo
+document.querySelectorAll('.edit-button').forEach(button => {
+    button.addEventListener('click', (event) => {
+        const field = event.target.dataset.field;
+        const span = document.getElementById(`user-${field}`);
+        const currentValue = span.textContent;
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentValue;
+        span.textContent = '';
+        span.appendChild(input);
+
+        event.target.textContent = "Salva";
+        event.target.classList.remove('edit-button');
+        event.target.classList.add('save-button');
+
+        input.focus();
+
+        // Salviamo il valore originale qui per poterlo usare in seguito
+        const originalValue = currentValue;
+
+        input.addEventListener('blur', () => {
+            saveField(field, input.value, span, event.target, originalValue);
+        });
+    });
+});
+
+function saveField(field, newValue, span, button, originalValue) {
+    if (newValue.trim() === "" && field !== "interests") {
+        alert("Il campo non può essere vuoto!");
+
+        // Ripristina il valore originale e reimposta il pulsante allo stato "Modifica"
+        span.textContent = originalValue;
+        button.textContent = "Modifica";
+        button.classList.remove('save-button');
+        button.classList.add('edit-button');
+        return;
+    }
+
+    const updateData = {};
+    updateData[field] = newValue;
+
+    database.collection("users").doc(currentUser.email).update(updateData)
+        .then(() => {
+            span.textContent = newValue;
+            button.textContent = "Modifica";
+            button.classList.remove('save-button');
+            button.classList.add('edit-button');
+        })
+        .catch((error) => {
+            console.error("Errore nel salvataggio delle modifiche: ", error);
+
+            // In caso di errore, ripristina il valore originale e il pulsante
+            span.textContent = originalValue;
+            button.textContent = "Modifica";
+            button.classList.remove('save-button');
+            button.classList.add('edit-button');
+        });
+}
+
+//Event listener per il pulsante Pubblica Ricetta
+publishRecipeButton.addEventListener("click", () => {
+    publishRecipeForm.style.display = "block";
+    searchRecipes.style.display = "none";
+    recipesList.style.display = "none";
+});
+
+//Event listener per il pulsante Annulla nel form di nuova ricetta
+cancelPublishRecipeButton.addEventListener("click", () => {
+    newRecipeForm.reset();
+    resetIngredientInputs();
+    resetStepInputs();
+    publishRecipeForm.style.display = "none";
+    searchRecipes.style.display = "block";
+    recipesList.style.display = "block";
+});
+
+// Funzione per resettare gli input degli ingredienti
+function resetIngredientInputs() {
+    const ingredientEntries = document.querySelectorAll("#ingredients-list .ingredient-entry");
+    ingredientEntries.forEach((entry, index) => {
+        if (index !== 0) {
+            ingredientsList.removeChild(entry);
+        }
+    });
+    ingredientEntries[0].querySelector('.ingredient').value = ''; //Ripristina il primo input degli ingredienti a uno spazio vuoto
+    ingredientEntries[0].querySelector('.dosage').value = ''; // Ripristina il primo input del dosaggio
+    ingredientEntries[0].querySelector('.ingredient').required = true; //Imposta l'attributo required sul primo input per gli ingredienti
+    ingredientEntries[0].querySelector('.dosage').required = true; //Imposta l'attributo required sul primo input per i dosaggi
+}
+
+function resetStepInputs() {
+    const stepInputs = document.querySelectorAll("#steps-list .step");
+    stepInputs.forEach((input, index) => {
+        if (index !== 0) {
+            stepsList.removeChild(input);
+        }
+    });
+    stepInputs[0].value = ''; //Ripristina il primo input del procedimento a uno spazio vuoto
+  stepInputs[0].required = true; // Imposta l'attributo required sul primo input
+}
+
+// Aggiungi nuovo input per ingrediente e dosaggio
+addIngredientButton.addEventListener("click", () => {
+    const newIngredientEntry = document.createElement("div");
+    newIngredientEntry.className = "ingredient-entry";
+    newIngredientEntry.innerHTML = `
+        <input type="text" name="ingredients[]" class="ingredient" required placeholder="Ingrediente">
+        <input type="text" name="dosages[]" class="dosage" required placeholder="Dosaggio">
+    `;
+    ingredientsList.appendChild(newIngredientEntry);
+});
+
+// Rimuovi ultimo input per ingrediente e dosaggio
+removeIngredientButton.addEventListener("click", () => {
+    const ingredientEntries = document.querySelectorAll("#ingredients-list .ingredient-entry");
+    if (ingredientEntries.length > 1) {
+        ingredientsList.removeChild(ingredientEntries[ingredientEntries.length - 1]);
+    } else {
+        alert("Devi avere almeno un ingrediente.");
+    }
+});
+
+addStepButton.addEventListener("click", () => {
+    const newStep = document.createElement("input");
+    newStep.type = "text";
+    newStep.name = "steps[]";
+    newStep.className = "step";
+  newStep.required = true; // Imposta l'attributo required sui nuovi input
+    stepsList.appendChild(newStep);
+});
+
+removeStepButton.addEventListener("click", () => {
+    const stepInputs = document.querySelectorAll("#steps-list .step");
+    if (stepInputs.length > 1) {
+        const lastStep = stepsList.lastChild;
+        if (lastStep) {
+            stepsList.removeChild(lastStep);
+        }
+    } else {
+        alert("Devi avere almeno un punto del procedimento.");
+    }
+});
+
+function addReview(recipeId, reviewerName, rating, text) {
+    const recipeRef = database.collection("recipes").doc(recipeId);
+    
+    recipeRef.get().then((doc) => {
+        if (doc.exists) {
+            const recipeData = doc.data();
+            const newReview = {
+                reviewerName: reviewerName,
+                rating: rating,
+                text: text
+            };
+            const updatedReviews = recipeData.reviews ? [...recipeData.reviews, newReview] : [newReview];
+            const totalRating = updatedReviews.reduce((acc, review) => acc + review.rating, 0);
+            const averageRating = totalRating / updatedReviews.length;
+            
+            recipeRef.update({
+                reviews: updatedReviews,
+                averageRating: averageRating
+            }).then(() => {
+                alert("Recensione aggiunta con successo!");
+                loadRecipes();
+            }).catch((error) => {
+                console.error("Errore nell'aggiunta della recensione: ", error);
+            });
+        } else {
+            console.error("Ricetta non trovata.");
+        }
+    }).catch((error) => {
+        console.error("Errore nel recupero della ricetta: ", error);
+    });
+}
+
+// Funzione per condividere il tentativo
+function shareAttemptWithPhoto(recipeId, photoFile, suggestions) {
+    const reader = new FileReader();
+    reader.onloadend = function() {
+        const attemptPhotoUrl = reader.result;
+        saveAttempt(recipeId, attemptPhotoUrl, suggestions);
+    };
+    reader.readAsDataURL(photoFile);
+}
+
+function shareAttemptWithoutPhoto(recipeId, suggestions) {
+    saveAttempt(recipeId, null, suggestions);
+}
+
+function saveAttempt(recipeId, attemptPhotoUrl, suggestions) {
+    const recipeRefAttempt = database.collection("recipes").doc(recipeId);
+    recipeRefAttempt.get().then((doc) => {
+        if (doc.exists) {
+            const recipeData = doc.data();
+            const newAttempt = {
+                attemptPhotoUrl: attemptPhotoUrl,
+                suggestions: suggestions,
+                nickname: currentUser.nickname,
+                timestamp: new Date()
+            };
+            const updatedAttempts = recipeData.attempts ? [...recipeData.attempts, newAttempt] : [newAttempt];
+            recipeRefAttempt.update({
+                attempts: updatedAttempts
+            }).then(() => {
+                alert("Tentativo condiviso con successo!");
+                loadRecipes();
+            }).catch((error) => {
+                console.error("Errore nella condivisione del tentativo: ", error);
+            });
+        } else {
+            console.error("Ricetta non trovata.");
+        }
+    }).catch((error) => {
+        console.error("Errore nel recupero della ricetta: ", error);
+    });
+}
+
+//Event listener per il form di nuova ricetta
+newRecipeForm.addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const recipeName = document.getElementById("recipe-name").value;
+    const recipePhoto = document.getElementById("recipe-photo").files[0];
+    const prepTimeHours = parseInt(document.getElementById("prep-time-hours").value);
+    const prepTimeMinutes = parseInt(document.getElementById("prep-time-minutes").value);
+    const difficulty = parseInt(document.getElementById("difficulty").value);
+    const ingredients = Array.from(document.getElementsByClassName("ingredient")).map(input => input.value);
+    const dosages = Array.from(document.querySelectorAll(".dosage")).map(input => input.value);
+    const steps = Array.from(document.getElementsByClassName("step")).map(input => input.value);
+    const cuisineType = document.getElementById("cuisine-type").value.trim().toLowerCase();
+  
+  if (prepTimeHours === 0 && prepTimeMinutes === 0) {
+        alert("Il tempo di preparazione non può essere 0 ore e 0 minuti.");
+        return; // Interrompe l'esecuzione della funzione e impedisce l'invio del modulo
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = function() {
+        const photoUrl = reader.result;
+        database.collection("recipes").add({
+            name: recipeName,
+            photoUrl: photoUrl,
+            prepTime: {
+                hours: prepTimeHours,
+                minutes: prepTimeMinutes
+            },
+            difficulty: difficulty,
+            ingredients: ingredients.map((ingredient, index) => `${ingredient} - ${dosages[index]}`),
+            steps: steps,
+            nickname: currentUser.nickname,
+            cuisineType: cuisineType,
+            reviews: []
+        })
+        .then(() => {
+            alert("Ricetta pubblicata con successo!");
+            newRecipeForm.reset();
+            resetIngredientInputs();
+            resetStepInputs();
+            publishRecipeForm.style.display = "none";
+            searchRecipes.style.display = "block";
+            recipesList.style.display = "block";
+            loadRecipes();
+        })
+        .catch((error) => {
+            alert("Si è verificato un errore durante la pubblicazione della ricetta.");
+            console.error(error);
+        });
+    }
+    if (recipePhoto) {
+        reader.readAsDataURL(recipePhoto);
+    }
+});
+
+// Dichiarazione di variabili globali per tenere traccia dello stato delle etichette
+let dietaryPreferencesLabelAdded = false;
+let allergiesLabelAdded = false;
+
+// Event listener per la gestione del profilo
+profileManagementButton.addEventListener("click", () => {
+    recipesContainer.style.display = "none";
+    profileManagementContainer.style.display = "block";
+    displayUserInfo();
+    loadUserRecipes();
+  
+  const dietaryPreferencesContainer = document.getElementById("dietary-preferences-container");
+    const allergiesContainer = document.getElementById("allergies-container");
+
+    dietaryPreferencesContainer.innerHTML = '';
+    allergiesContainer.innerHTML = '';
+
+    database.collection("users").doc(currentUser.email).get()
+        .then((doc) => {
+            if (doc.exists) {
+                const userData = doc.data();
+
+                if (userData.dietaryPreferences.length > 0) {
+                    addInputLabel(dietaryPreferencesContainer, "Preferenze Alimentari:");
+                }
+                userData.dietaryPreferences.forEach(preference => {
+                    addInputField(dietaryPreferencesContainer, "dietary-preference", "Preferenza alimentare", preference);
+                });
+
+                if (userData.allergies.length > 0) {
+                    addInputLabel(allergiesContainer, "Allergie:");
+                }
+                userData.allergies.forEach(allergy => {
+                    addInputField(allergiesContainer, "allergy", "Allergia", allergy);
+                });
+              storeInitialState();
+              
+              // Chiamata alla funzione per aggiornare lo stato del pulsante "Salva modifiche" anche dopo un Run del codice, così da non vederlo inizialmente (se un utente aveva dei dati in preferenze alimentari o allergie, esso appariva, poi dopo un click andava via, così evito questa cosa)
+                toggleSubmitButton();
+            } else {
+                console.error("Documento utente non trovato.");
+            }
+        })
+        .catch((error) => {
+            console.error("Errore nel caricamento del profilo utente: ", error);
+        });
+  
+});
+
+logoutButton.addEventListener("click", () => {
+    currentUser = null;
+    //restoreInitialState();
+    recipesContainer.style.display = "none";
+    profileManagementContainer.style.display = "none";
+    registrationContainer.style.display = "block";
+});
+
+// Event listener per il pulsante "Indietro" nella sezione Gestione del Profilo
+const backButton = document.getElementById("back-to-user-recipes");
+backButton.addEventListener("click", () => {
+    restoreInitialState();
+    recipesContainer.style.display = "block";
+    profileManagementContainer.style.display = "none";
+});
+
+// Funzione per memorizzare lo stato iniziale
+function storeInitialState() {
+    initialDietaryPreferences = Array.from(document.getElementsByClassName("dietary-preference")).map(input => input.value);
+    initialAllergies = Array.from(document.getElementsByClassName("allergy")).map(input => input.value);
+    initialDietaryPreferencesCount = initialDietaryPreferences.length;
+    initialAllergiesCount = initialAllergies.length;
+}
+
+// Funzione per ripristinare lo stato iniziale
+function restoreInitialState() {
+    const dietaryPreferencesContainer = document.getElementById("dietary-preferences-container");
+    const allergiesContainer = document.getElementById("allergies-container");
+  
+    // Rimuove tutti i campi di input esistenti
+    dietaryPreferencesContainer.innerHTML = '';
+    allergiesContainer.innerHTML = '';
+
+    // Aggiunge le etichette solo se sono state precedentemente aggiunte
+    if (initialDietaryPreferences.length > 0) {
+        addInputLabel(dietaryPreferencesContainer, "Preferenze Alimentari:");
+    }
+    // Aggiunge i campi di input esistenti
+    initialDietaryPreferences.forEach(preference => {
+        addInputField(dietaryPreferencesContainer, "dietary-preference", "Preferenza alimentare", preference);
+    });
+    if (initialAllergies.length > 0) {
+        addInputLabel(allergiesContainer, "Allergie:");
+    }
+    // Aggiunge i campi di input esistenti
+    initialAllergies.forEach(allergy => {
+        addInputField(allergiesContainer, "allergy", "Allergia", allergy);
+    });
+
+    toggleSubmitButton();
+}
+
+function loadUserRecipes() {
+    userRecipesList.innerHTML = '';
+  const loadingIndicator = document.getElementById("loading-indicator");
+    loadingIndicator.style.display = "block";
+  
+    database.collection("recipes").where("nickname", "==", currentUser.nickname).get()
+        .then((querySnapshot) => {
+      loadingIndicator.style.display = "none";
+      
+      if (querySnapshot.empty) {
+                userRecipesList.innerHTML = "<p>Non hai ancora pubblicato nulla</p";
+                return;
+            }
+      
+            querySnapshot.forEach((doc) => {
+                const recipeData = doc.data();
+              // Visualizzazione delle recensioni
+            let reviewsHtml = '';
+            if (recipeData.reviews  && recipeData.reviews.length > 0) {
+                reviewsHtml = recipeData.reviews.map(review => `
+                    <div class="review">
+                        <p><strong>${review.reviewerName}:</strong> ${review.rating}/5</p>
+                        <p>${review.text}</p>
+                    </div>
+                `).join('');
+            } else {
+                reviewsHtml = '<p>Non sono presenti recensioni</p>';
+            }
+                const recipeItem = document.createElement("div");
+                recipeItem.className = "recipe-item";
+
+                let difficultyCircles = '';
+                for (let i = 0; i < 5; i++) {
+                    if (i < recipeData.difficulty) {
+                        difficultyCircles += `<span class="circle filled difficulty-${recipeData.difficulty}"></span>`;
+                    } else {
+                        difficultyCircles += '<span class="circle empty"></span>';
+                    }
+                }
+
+                recipeItem.innerHTML = `
+                <h3>${recipeData.name}</h3>
+                <img src="${recipeData.photoUrl}" alt="${recipeData.name}">
+                <p>Tipo di Cucina: ${recipeData.cuisineType}</p>
+                <p>Tempo di preparazione: ${recipeData.prepTime.hours}h ${recipeData.prepTime.minutes}m</p>
+                <p>Difficoltà: ${difficultyCircles}</p>
+                <p>Ingredienti:</p>
+                <ul>
+                    ${recipeData.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
+                </ul>
+                <p>Procedimento:</p>
+                <ol>
+                    ${recipeData.steps.map(step => `<li>${step}</li>`).join('')}
+                </ol>
+                <p>Pubblicato da: ${recipeData.nickname}</p>
+                <button class="delete-recipe-button" data-id="${doc.id}">Elimina Ricetta</button>
+                <div class="reviews">
+                    <h4>Recensioni:</h4>
+                    ${reviewsHtml}
+                </div>
+            `;
+
+                userRecipesList.appendChild(recipeItem);
+            });
+      
+      //Event listener di click per i pulsanti "Elimina Ricetta"
+            const deleteButtons = document.querySelectorAll(".delete-recipe-button");
+            deleteButtons.forEach(button => {
+                button.addEventListener("click", (event) => {
+                    const recipeId = event.target.getAttribute("data-id");
+                    const confirmDelete = confirm("Sei sicuro di voler eliminare questa ricetta?");
+                    if (confirmDelete) {
+                        deleteRecipe(recipeId);
+                    }
+                });
+            });
+      
+        })
+        .catch((error) => {
+            console.error("Errore nel caricamento delle ricette utente: ", error);
+        });
+}
+
+function deleteRecipe(recipeId) {
+    database.collection("recipes").doc(recipeId).delete()
+        .then(() => {
+            alert("Ricetta eliminata con successo!");
+            loadUserRecipes(); // Ricarica le ricette dell'utente dopo l'eliminazione
+            loadRecipes(); // Ricarica anche la pagine delle ricette pubblicate degli utenti
+        })
+        .catch((error) => {
+            alert("Si è verificato un errore durante l'eliminazione della ricetta.");
+            console.error("Errore nell'eliminazione della ricetta: ", error);
+        });
+}
+
+// Funzione per creare un campo con un pulsante di eliminazione
+function createField(container, placeholderText) {
+    const fieldWrapper = document.createElement("div");
+    const field = document.createElement("input");
+    field.type = "text";
+    field.placeholder = placeholderText;
+    field.required = true;
+    
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.textContent = "Elimina Campo";
+    removeButton.className = "remove-field-button";
+    
+    removeButton.addEventListener("click", () => {
+        container.removeChild(fieldWrapper);
+        checkAndRemoveLabel(container, "dietary-preference");
+        checkAndRemoveLabel(container, "allergy");
+    });
+    
+    fieldWrapper.appendChild(field);
+    fieldWrapper.appendChild(removeButton);
+    container.appendChild(fieldWrapper);
+}
+
+// Aggiungi campi per le preferenze alimentari e le allergie
+includeDietaryPreferencesButton.addEventListener("click", () => {
+  addInputLabel(dietaryPreferencesContainer, "Preferenze Alimentari:");  
+  addInputField(dietaryPreferencesContainer, "dietary-preference", "Preferenza alimentare");
+  toggleSubmitButton();
+  checkAndRemoveLabel(dietaryPreferencesContainer, "dietary-preference");
+});
+
+includeAllergiesButton.addEventListener("click", () => {
+  addInputLabel(allergiesContainer, "Allergie:");  
+  addInputField(allergiesContainer, "allergy", "Allergia");
+  toggleSubmitButton();
+  checkAndRemoveLabel(allergiesContainer, "allergy");
+});
+
+// Funzione per aggiungere un campo input con pulsante di eliminazione
+function addInputField(container, className, placeholder, value = "") {
+    const inputGroup = document.createElement("div");
+    inputGroup.className = "input-group";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.name = `${className}[]`;
+    input.className = className;
+    input.placeholder = placeholder;
+    input.value = value;
+    input.required = true; // Rende il campo obbligatorio
+    input.addEventListener("input", toggleSubmitButton); // Aggiunge l'evento input per monitorare i cambiamenti
+    inputGroup.appendChild(input);
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.textContent = "Elimina Campo";
+    deleteButton.addEventListener("click", () => {
+        container.removeChild(inputGroup);
+      toggleSubmitButton();
+      checkAndRemoveLabel(container, className);
+    });
+    inputGroup.appendChild(deleteButton);
+
+    container.appendChild(inputGroup);
+  toggleSubmitButton();
+  checkAndRemoveLabel(container, className);
+}
+
+// Funzione per aggiungere un'etichetta accanto al campo input
+function addInputLabel(container, labelText) {
+    if (!labelExists(container, labelText)) {
+        const label = document.createElement("label");
+        label.textContent = labelText;
+        container.appendChild(label);
+
+        // Imposta lo stato dell'etichetta come aggiunto
+        if (labelText === "Preferenza Alimentare:") {
+            dietaryPreferencesLabelAdded = true;
+        } else if (labelText === "Allergia:") {
+            allergiesLabelAdded = true;
+        }
+    }
+}
+
+// Funzione per verificare se un'etichetta esiste già
+function labelExists(container, labelText) {
+    const labels = container.getElementsByTagName("label");
+    for (let label of labels) {
+        if (label.textContent === labelText) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Funzione per rimuovere l'etichetta accanto al campo input se non ci sono più campi
+function checkAndRemoveLabel(container, className) {
+    const inputs = container.getElementsByClassName(className);
+    if (inputs.length === 0) {
+        removeInputLabel(container);
+    }
+}
+
+// Funzione per rimuovere l'etichetta accanto al campo input
+function removeInputLabel(container) {
+    const labels = container.getElementsByTagName("label");
+    if (labels.length > 0) {
+        container.removeChild(labels[0]);
+    }
+
+    // Imposta lo stato dell'etichetta come non aggiunto
+    if (container.id === "dietary-preferences-container") {
+        dietaryPreferencesLabelAdded = false;
+    } else if (container.id === "allergies-container") {
+        allergiesLabelAdded = false;
+    }
+}
+
+// Funzione per mostrare o nascondere il pulsante di invio
+function toggleSubmitButton() {
+    const currentDietaryPreferences = Array.from(document.getElementsByClassName("dietary-preference")).map(input => input.value);
+    const currentAllergies = Array.from(document.getElementsByClassName("allergy")).map(input => input.value);
+
+    const hasDietaryPreferencesChanged = currentDietaryPreferences.length !== initialDietaryPreferencesCount || !arraysEqual(currentDietaryPreferences, initialDietaryPreferences);
+    const hasAllergiesChanged = currentAllergies.length !== initialAllergiesCount || !arraysEqual(currentAllergies, initialAllergies);
+
+    if (hasDietaryPreferencesChanged || hasAllergiesChanged) {
+        submitButton.style.display = 'block';
+    } else {
+        submitButton.style.display = 'none';
+    }
+}
+
+// Helper function per confrontare due array
+function arraysEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false;
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) return false;
+    }
+    return true;
+}
+
+// Inizialmente nasconde il pulsante di invio
+submitButton.style.display = 'none';
+
+// Salva le modifiche nel database
+profileManagementForm.addEventListener("submit", function(event) {
+    event.preventDefault();
+    const dietaryPreferences = Array.from(document.getElementsByClassName("dietary-preference")).map(input => input.value);
+    const allergies = Array.from(document.getElementsByClassName("allergy")).map(input => input.value);
+
+  // Controlla se i campi obbligatori sono stati compilati
+    if (dietaryPreferences.some(value => !value) || allergies.some(value => !value)) {
+        alert("Completa tutti i campi obbligatori.");
+        return;
+    }
+  
+    database.collection("users").doc(currentUser.email).update({
+        dietaryPreferences: dietaryPreferences,
+        allergies: allergies
+    })
+    .then(() => {
+        alert("Modifiche salvate con successo!");
+       // Aggiorna i conteggi iniziali
+        storeInitialState(); // Aggiorna anche lo stato iniziale salvato
+      toggleSubmitButton(); // Nasconde il pulsante di invio dopo il salvataggio
+    })
+    .catch((error) => {
+        alert("Si è verificato un errore durante il salvataggio delle modifiche.");
+        console.error(error);
+    });
+});
