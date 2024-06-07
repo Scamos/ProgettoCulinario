@@ -1,0 +1,216 @@
+.container { /*Seleziona tutti gli elementi con classe container.*/
+    max-width: 400px; /*Imposta la larghezza massima del contenitore a 400 pixel.*/
+    margin: 50px auto; /*Imposta un margine di 50 pixel in alto e in basso, e auto ai lati, per centrare il contenitore orizzontalmente.*/
+    padding: 20px; /* Aggiunge uno spazio interno (bordo interno) di 20 pixel al contenitore.*/
+    border: 1px solid #ccc; /*Aggiunge un bordo di 1 pixel con colore grigio chiaro al contenitore.*/
+    border-radius: 5px; /*Arrotonda gli angoli del contenitore a 5 pixel.*/
+}
+
+.form-group { /*Seleziona tutti gli elementi con classe form-group.*/
+    margin-bottom: 15px; /*Aggiunge un margine inferiore di 15 pixel a ogni gruppo di campi del modulo.*/
+}
+
+label { /*Seleziona tutti gli elementi <label> (etichetta).*/
+    display: block; /*Imposta l'etichetta come un blocco, in modo che abbia un layout a riga singola (l'elemento deve essere visualizzato come un elemento di blocco, occupando tutta la larghezza disponibile e iniziando sempre su una nuova riga, utile per creare layout a blocchi dove ogni elemento occupa l'intera larghezza disponibile).*/
+    margin-bottom: 5px; /*Aggiunge un margine inferiore di 5 pixel all'etichetta.*/
+}
+
+/*Seleziona tutti gli elementi di input di tipo testo.*/
+/*Seleziona tutti gli elementi di input di tipo email.*/
+/*Seleziona tutti gli elementi di input di tipo telefono.*/
+/*Seleziona tutti gli elementi di input di tipo password.*/
+/*Seleziona tutti gli elementi di input di tipo numero.*/
+/*Seleziona tutti gli elementi di input di tipo file.*/
+input[type="text"], input[type="email"], input[type="tel"], input[type="password"], input[type="number"], input[type="file"] {
+    width: 90%; /*Imposta la larghezza degli input (dei box degli input) al 90% del loro contenitore.*/
+    padding: 10px; /*Aggiunge uno spazio interno (bordo interno) di 10 pixel agli input.*/
+    border: 1px solid #ccc; /*Aggiunge un bordo di 1 pixel con colore grigio chiaro agli input (crea i "box" degli input).*/
+    border-radius: 4px; /*Arrotonda gli angoli degli input (dei box degli input) a 4 pixel.*/
+}
+
+button { /*Seleziona tutti gli elementi <button>.*/
+    padding: 10px 15px; /*Aggiunge uno spazio interno di 10 pixel in alto e in basso e 15 pixel ai lati al pulsante.*/
+    background-color: #007BFF; /*Imposta il colore di sfondo del pulsante a blu.*/
+    color: #fff; /*Imposta il colore del testo del pulsante a bianco.*/
+    border: none; /*Rimuove il bordo del pulsante.*/
+    border-radius: 4px; /*Arrotonda gli angoli del pulsante a 4 pixel.*/
+    cursor: pointer; /*Cambia il cursore del mouse quando si passa sopra il pulsante a "pointer".*/
+}
+
+button:hover { /*Stile applicato quando il cursore del mouse è sopra il pulsante.*/
+    background-color: #0056b3; /*Cambia il colore di sfondo del pulsante a una tonalità più scura di blu quando il cursore è sopra di esso.*/
+}
+
+/*Stile per le liste delle ricette*/
+#recipes-list, #user-recipes-list {
+    margin-top: 20px;
+}
+
+.recipe-item {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.recipe-item img {
+    max-width: 100%;
+    border-radius: 5px;
+}
+
+#ingredients-list .ingredient,
+#steps-list .step {
+    display: block;
+    margin-bottom: 5px;
+    width: calc(100% - 22px);
+}
+
+#search-recipes {
+    margin-bottom: 20px;
+}
+
+  .circle {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 2px;
+  }
+  .circle.filled {
+    background-color: black;
+  }
+  .circle.empty {
+    background-color: lightgray;
+  }
+
+.circle.difficulty-1 {
+    background-color: green;
+}
+
+.circle.difficulty-2 {
+    background-color: yellowgreen;
+}
+
+.circle.difficulty-3 {
+    background-color: yellow;
+}
+
+.circle.difficulty-4 {
+    background-color: orange;
+}
+
+.circle.difficulty-5 {
+    background-color: red;
+}
+
+/* Stili per l'header delle ricette */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#loading-indicator {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+/* Stile per la sezione di ricerca */
+#search-recipes {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+#search-recipes h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+#search-recipes-form .form-group {
+    margin-bottom: 15px;
+}
+
+#search-recipes-form .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+#search-recipes-form .form-group input,
+#search-recipes-form .form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Stile specifico per il box Valutazione */
+#search-recipes-form .form-group#rating-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#search-recipes-form .form-group#rating-group label {
+    margin-bottom: 10px;
+}
+
+#search-recipes-form .form-group#rating-group select {
+    max-width: 150px;
+    background-color: #fff;
+    font-size: 16px;
+}
+
+#search-recipes-form button[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#search-recipes-form button[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+/* Stile per le recensioni */
+.review {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.review p {
+    margin: 5px 0;
+}
+
+.review-form {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f1f1f1;
+}
+
+/* Stile per la textarea della recensione */
+.review-form textarea {
+    width: calc(100% - 20px);
+    height: 100px;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    resize: vertical;
+}
